@@ -1,0 +1,4 @@
+awscli
+arrow==0.10.0
+requests==2.18.3
+
