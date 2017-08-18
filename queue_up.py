@@ -6,6 +6,8 @@ import sys
 
 import config
 
+from firebase import Firebase
+
 
 GROUPME_URL = 'https://api.groupme.com/v3'
 GROUPME_NO_MESSAGE_STATUS_CODE = 304
@@ -20,8 +22,9 @@ logger.addHandler(stdoutput)
 
 
 def main():
-    assert(verfify_fishy_group_exists())
+    # assert(verfify_fishy_group_exists())
     get_all_multi_media_messages()
+    firebase = Firebase(config.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY, config.FIREBASE_DATABASE_URL)
 
 
 def get_groups():
@@ -138,13 +141,12 @@ def get_all_multi_media_messages():
         # only interested in messages with a picture or video
         if groupme_message_has_image_or_video(message):
             event_obj = create_event_from_groupme_message(message)
-
+            print(event_obj)
             total_count += 1
 
         # TODO: save events in chunks of 1,000
 
     logger.info('finished saving {} events')
-
 
 if __name__ == '__main__':
     main()
