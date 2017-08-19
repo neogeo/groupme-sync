@@ -22,9 +22,12 @@ logger.addHandler(stdoutput)
 
 
 def main():
-    # assert(verfify_fishy_group_exists())
-    get_all_multi_media_messages()
-    firebase = Firebase(config.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY, config.FIREBASE_DATABASE_URL)
+    assert(verfify_fishy_group_exists())
+    for msg in get_all_multi_media_messages_iter():
+        print(msg)
+
+    firebase_db = Firebase(config.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY, config.FIREBASE_DATABASE_URL)
+    # save_all_multi_media_messages
 
 
 def get_groups():
@@ -134,19 +137,34 @@ def get_first_image_or_video_attachment_from_groupme_message(message):
     raise Exception('No image or Video Attchment: {}'.format(message))
 
 
-def get_all_multi_media_messages():
-    total_count = 0
-
+def get_all_multi_media_messages_iter():
+    '''Get only those messages that contain a picure or video
+    '''
     for message in get_all_messages_iter():
-        # only interested in messages with a picture or video
         if groupme_message_has_image_or_video(message):
-            event_obj = create_event_from_groupme_message(message)
-            print(event_obj)
-            total_count += 1
+            yield message
 
-        # TODO: save events in chunks of 1,000
 
-    logger.info('finished saving {} events')
+def save_all_multi_media_messages(firebase_db):
+    total_count = 0
+    events = []
+
+    for message in get_all_multi_media_messages_iter():
+        event_obj = create_event_from_groupme_message(message)
+        print(event_obj)
+        total_count += 1
+
+        # save events in chunks of 100
+        if events % 100 == 0:
+            firebase_db.create_from_list(events)
+            events = []
+
+    # if there are any events remaining
+    if events:
+        firebase_db.create_from_list(events)
+
+    logger.info('finished saving all {} events'.format(total_count))
+
 
 if __name__ == '__main__':
     main()

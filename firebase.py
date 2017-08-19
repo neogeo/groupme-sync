@@ -36,6 +36,15 @@ class Firebase():
 
         return event
 
+    def create_from_list(self, event_objs):
+        if not isinstance(event_objs, list):
+            raise Exception('must have a list of events to save {}'.format(event_objs))
+
+        for event in event_objs:
+            self.create(event)
+
+        logger.info('finished saving {} events'.format(len(event_objs)))
+
     def create(self, event_obj):
         path = 'events/{}'.format(event_obj['id'])
         # save with a specified id
