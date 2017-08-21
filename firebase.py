@@ -1,6 +1,7 @@
 import logging
 import sys
 
+import event_model
 import firebase_admin
 from firebase_admin import credentials, db
 
@@ -34,7 +35,7 @@ class Firebase():
         if event is None:
             raise Exception('event with id {} not found'.format(event_id))
 
-        return event
+        return event_model.event_from_firebase_response(event)
 
     def create_from_list(self, event_objs):
         if not isinstance(event_objs, list):
@@ -50,7 +51,7 @@ class Firebase():
         # save with a specified id
         self.root.child(path).set(event_obj)
 
-        logger.info('saved event {}'.format(self.get_json(event_obj['id'])))
+        logger.info('saved event {}'.format(event_obj['id']))
 
     def update(self, event_obj):
         path = 'events/{}'.format(event_obj['id'])

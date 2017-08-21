@@ -45,30 +45,6 @@ class GroupMeAPI():
 
         raise Exception('No image or Video Attchment: {}'.format(message))
 
-    @classmethod
-    def create_event_from_groupme_message(cls, message):
-        # get the first mdeia attachment
-        media_attachment = cls.get_first_image_or_video_attachment_from_groupme_message(message)
-        media_type, media_url = media_attachment['type'], media_attachment['url']
-        # Only images can have captions
-        caption = message['text'] if media_type == 'image' else None
-
-        groupme_id = message['id']
-        created_at_ts = message['created_at']
-        hearted = True if message['favorited_by'] else False
-        backup_link = None
-
-        event_obj = {
-            'groupme_id': groupme_id,
-            'type': media_type,
-            'source_url': media_url,
-            'created_at': created_at_ts,
-            'hearted': hearted,
-            'caption': caption,
-            'backup_link': backup_link,
-        }
-        return event_obj
-
     def get_groups(self):
         url = '{}/groups'.format(self.base_url)
         res = requests.get(url, headers=self.headers)
