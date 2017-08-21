@@ -24,6 +24,9 @@ def main():
     # print(msg)
 
     firebase_db = Firebase(config.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY, config.FIREBASE_DATABASE_URL)
+
+    firebase_query = firebase_db.get_root_for_query()
+    import pdb;pdb.set_trace()
     # save_all_multi_media_messages(groupme_api, firebase_db)
 
 
@@ -49,6 +52,14 @@ def save_all_multi_media_messages(groupme_api, firebase_db):
         firebase_db.create_from_list(events)
 
     logger.info('finished saving all {} events'.format(total_count))
+
+
+def save_since_last_message(groupme_api, firebase_db):
+    # get last saved messege in firebase
+    # latest_event = firebase_db.get_most_recent_event()
+    # get since id from groupme
+    # save all
+    pass
 
 
 if __name__ == '__main__':
