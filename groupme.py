@@ -69,6 +69,13 @@ class GroupMeAPI():
             if self.groupme_message_has_image_or_video(message):
                 yield message
 
+    def get_all_multi_media_messages_after_iter(self, message_id):
+        '''Get only those messages that contain a picure or video
+        '''
+        for message in self._get_messages_after(message_id):
+            if self.groupme_message_has_image_or_video(message):
+                yield message
+
     def _get_messages(self, limit=100):
         url = '{}/groups/{}/messages'.format(self.base_url, self.group_id)
         res = requests.get(url, headers=self.headers, params={'limit': limit})
@@ -96,6 +103,22 @@ class GroupMeAPI():
 
         logger.info('finished fetching all messages')
 
+    def _get_all_messages_after_iter(self, og_message_id):
+        '''Gets all messages in descending order of date created
+        '''
+        oldest_message_id = og_message_id
+        messages = self._get_messages_after(oldest_message_id)
+
+        while messages:
+            logger.info('found {} messages, from {} to {}'.format(len(messages), arrow.get(messages[1]['created_at']), arrow.get(messages[-1]['created_at'])))
+            for message in messages:
+                yield message
+
+            oldest_message_id = messages[0]['id']
+            messages = self._get_messages_after(oldest_message_id)
+
+        logger.info('finished fetching all messages created after {}'.format(og_message_id))
+
     def _get_messages_before(self, groupme_message_id):
         '''Gets 100 messages that occurred immediately before the given id
         This will return an empty list if no messages exist before
@@ -106,6 +129,22 @@ class GroupMeAPI():
 
         if res.status_code == GROUPME_NO_MESSAGE_STATUS_CODE:
             logging.info('no more messages before {}'.format(groupme_message_id))
+            return []
+
+        res.raise_for_status()
+
+        return res.json()['response']['messages']
+
+    def _get_messages_after(self, groupme_message_id):
+        '''Gets 100 messages that occurred immediately after the given id
+        This will return an empty list if no messages exist after
+        '''
+        limit = 100
+        url = '{}/groups/{}/messages'.format(self.base_url, self.group_id)
+        res = requests.get(url, headers=self.headers, params={'limit': limit, 'after_id': groupme_message_id})
+
+        if res.status_code == GROUPME_NO_MESSAGE_STATUS_CODE:
+            logging.info('no more messages after {}'.format(groupme_message_id))
             return []
 
         res.raise_for_status()

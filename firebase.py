@@ -67,5 +67,6 @@ class Firebase():
     def get_most_recent_event(self):
         # order by 'created_at' in descending order
         res = self.root.child('events').order_by_child('created_at').limit_to_last(1).get()
+        event_json = res.values()[0]
 
-        return event_model.event_from_firebase_response(res)
+        return event_model.event_from_firebase_response(event_json)
