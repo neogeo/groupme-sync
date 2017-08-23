@@ -2,9 +2,10 @@ import logging
 import sys
 
 import arrow
-import config
 
+import config
 import event_model
+import file_utils
 from groupme import GroupMeAPI
 from firebase import Firebase
 
@@ -24,7 +25,8 @@ def main():
     assert(groupme_api.verfify_group_exists())
 
     # save_all_multi_media_messages(groupme_api, firebase_db)
-    save_since_last_message(groupme_api, firebase_db)
+    # save_since_last_message(groupme_api, firebase_db)
+    backup_images_to_s3(firebase_db)
 
 
 def save_all_multi_media_messages(groupme_api, firebase_db):
@@ -84,8 +86,21 @@ def save_since_last_message(groupme_api, firebase_db):
     logger.info('finished saving all {} new events'.format(total_count))
 
 
+def backup_images_to_s3(firebase_db):
+    # get all events in firebase that do not have a 'backup_link'
+    for event in firebase_db.get_events_that_need_backup_iter():
+        src_url = event['source_url']
+        media_type = event['type']
+
+        filepath = file_utils.download_file_from_url(src_url, media_type)
+
+        # save file to s3
+        # delete file
+        file_utils.delete_file(filepath)
+        # update firebase with 'backup_link'
+
 if __name__ == '__main__':
     # TODO: args to save all
-    # TODO: args to backup any None values
     # TODO: args to get most recent messages
+    # TODO: args to backup any None values
     main()

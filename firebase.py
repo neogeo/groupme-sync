@@ -1,3 +1,4 @@
+import copy
 import logging
 import sys
 
@@ -70,3 +71,35 @@ class Firebase():
         event_json = res.values()[0]
 
         return event_model.event_from_firebase_response(event_json)
+
+    def get_events_that_need_backup(self):
+        '''Get events with 'backup_link == none'
+        returns a list of events
+        '''
+        res = self.root.child('events').order_by_child('backup_link').limit_to_first(5).get()
+
+        return [event_model.event_from_firebase_response(event_json) for event_json in res.values()]
+
+    def get_events_that_need_backup_iter(self):
+        '''***Assumes the client updates the 'backup_link' field***
+        Firebase sucks because it doesn't handle pagination correctly https://github.com/firebase/FirebaseUI-iOS/issues/9
+        So the client must update the 'backup_link' field inorder for this iter to eventually stop. there is a safe guard
+        to prevent it from going into an infinite loop
+        '''
+        last_res = None
+        next_res = self.get_events_that_need_backup()
+        total = 0
+
+        while next_res:
+            for event_json in next_res:
+                event = event_model.event_from_firebase_response(event_json)
+                total += 1
+                yield event
+
+            last_res = copy.deepcopy(next_res)
+            next_res = self.get_events_that_need_backup()
+
+            if last_res == next_res:
+                raise Exception('please update the backup_links, or this could go on forever')
+
+        logger.info('finished fetching all {} events that need backup messages'.format())
