@@ -5,18 +5,18 @@ from urllib2 import urlopen
 CHUNK = 16 * 1024
 
 
-def download_file_from_url(src_url, media_type):
+def download_file_from_url(src_url, media_type, event_id):
         '''Download file locally from url
         url - url to file
         type - either 'image' or 'video'
 
-        returns filepath
+        returns filename
         '''
-        filename = create_filename(media_type)
+        filename = create_filename(media_type, event_id)
         delete_file(filename)
 
-        saved_filepath = download(src_url, filename)
-        return saved_filepath
+        saved_filename = download(src_url, filename)
+        return saved_filename
 
 
 def download(src_url, filename):
@@ -57,13 +57,13 @@ def delete_file(filename):
         pass
 
 
-def create_filename(media_type):
+def create_filename(media_type, event_id):
     '''Create filename from GroupMe files types
     '''
     type_to_ext = {
         'image': '.jpeg',
         'video': '.mp4',
     }
-    filename = 'temp_dl{}'.format(type_to_ext[media_type])
+    filename = '{}{}'.format(event_id, type_to_ext[media_type])
 
     return filename

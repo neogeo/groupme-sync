@@ -6,6 +6,7 @@ import arrow
 import config
 import event_model
 import file_utils
+import s3_utils
 from groupme import GroupMeAPI
 from firebase import Firebase
 
@@ -89,15 +90,21 @@ def save_since_last_message(groupme_api, firebase_db):
 def backup_images_to_s3(firebase_db):
     # get all events in firebase that do not have a 'backup_link'
     for event in firebase_db.get_events_that_need_backup_iter():
+        event_id = event['id']
         src_url = event['source_url']
         media_type = event['type']
 
-        filepath = file_utils.download_file_from_url(src_url, media_type)
+        filename = file_utils.download_file_from_url(src_url, media_type, event_id)
 
-        # save file to s3
-        # delete file
-        file_utils.delete_file(filepath)
+        s3_utils.upload(filename)
+
+        # delete local file
+        file_utils.delete_file(filename)
+
         # update firebase with 'backup_link'
+        event['backup_link'] = filename
+        firebase_db.update(event)
+
 
 if __name__ == '__main__':
     # TODO: args to save all

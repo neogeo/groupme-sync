@@ -59,7 +59,11 @@ class Firebase():
 
     def update(self, event_obj):
         path = 'events/{}'.format(event_obj['id'])
-        self.root.child(path).update(event_obj)
+
+        # strip None values, or firebase update will fail
+        clean_obj = {key: copy.deepcopy(value) for key, value in event_obj.items() if value is not None}
+
+        self.root.child(path).update(clean_obj)
 
     def delete(self, event_id):
         path = 'events/{}'.format(event_id)
