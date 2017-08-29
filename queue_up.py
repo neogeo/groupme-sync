@@ -1,5 +1,6 @@
 import logging
 import sys
+from urllib2 import HTTPError
 
 import arrow
 
@@ -27,7 +28,7 @@ def main():
 
     # save_all_multi_media_messages(groupme_api, firebase_db)
     # save_since_last_message(groupme_api, firebase_db)
-    backup_images_to_s3(firebase_db)
+    backup_media_to_s3(firebase_db)
 
 
 def save_all_multi_media_messages(groupme_api, firebase_db):
@@ -87,23 +88,40 @@ def save_since_last_message(groupme_api, firebase_db):
     logger.info('finished saving all {} new events'.format(total_count))
 
 
-def backup_images_to_s3(firebase_db):
+def backup_media_to_s3(firebase_db):
+    forbidden_events = []
+
     # get all events in firebase that do not have a 'backup_link'
     for event in firebase_db.get_events_that_need_backup_iter():
         event_id = event['id']
         src_url = event['source_url']
         media_type = event['type']
 
-        filename = file_utils.download_file_from_url(src_url, media_type, event_id)
+        try:
+            filename = file_utils.download_file_from_url(src_url, media_type, event_id)
 
-        s3_utils.upload(filename)
+            s3_utils.upload(filename)
 
-        # delete local file
-        file_utils.delete_file(filename)
+            # delete local file
+            file_utils.delete_file(filename)
 
-        # update firebase with 'backup_link'
-        event['backup_link'] = filename
-        firebase_db.update(event)
+            # update firebase with 'backup_link'
+            event['backup_link'] = filename
+            firebase_db.update(event)
+
+        except HTTPError as e:
+            if e.code == 403:
+                # very infrequently, a 403 is retured from the download link
+                # so this event is useless, delete it from firebase
+                logger.warn('This event has media that is forbidden. Deleting event {}'.format(event))
+
+                firebase_db.delete(event['id'])
+                forbidden_events.append(event)
+
+                logger.warn('Deleted event {}'.format(event))
+
+    logger.warn('Deleted {} events from firebase: {}'.format(len(forbidden_events), forbidden_events)) if forbidden_events else logger.info('')
+    logger.info('finished backup all media')
 
 
 if __name__ == '__main__':
