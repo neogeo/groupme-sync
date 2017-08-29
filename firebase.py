@@ -82,7 +82,16 @@ class Firebase():
         '''
         res = self.root.child('events').order_by_child('backup_link').limit_to_first(5).get()
 
-        return [event_model.event_from_firebase_response(event_json) for event_json in res.values()]
+        # firebase returns null values first: https://firebase.google.com/docs/database/rest/retrieve-data#section-rest-ordered-data
+        # so filter out any events without None
+        filtered_events = []
+        for event_json in res.values():
+            event = event_model.event_from_firebase_response(event_json)
+
+            if not event['backup_link']:
+                filtered_events.append(event)
+
+        return filtered_events
 
     def get_events_that_need_backup_iter(self):
         '''***Assumes the client updates the 'backup_link' field***
@@ -104,6 +113,6 @@ class Firebase():
             next_res = self.get_events_that_need_backup()
 
             if last_res == next_res:
-                raise Exception('please update the backup_links, or this could go on forever')
+                raise Exception('please update the "backup_links" field, or this could go on forever')
 
-        logger.info('finished fetching all {} events that need backup messages'.format())
+        logger.info('finished fetching all {} events that needed to be backed up'.format(total))

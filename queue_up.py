@@ -28,7 +28,7 @@ def main():
 
     # save_all_multi_media_messages(groupme_api, firebase_db)
     # save_since_last_message(groupme_api, firebase_db)
-    backup_media_to_s3(firebase_db)
+    # backup_media_to_s3(firebase_db)
 
 
 def save_all_multi_media_messages(groupme_api, firebase_db):
