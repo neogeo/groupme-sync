@@ -1,3 +1,4 @@
+import argparse
 import logging
 import sys
 from urllib2 import HTTPError
@@ -19,16 +20,25 @@ stdoutput = logging.StreamHandler(sys.stdout)
 stdoutput.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 logger.addHandler(stdoutput)
 
+ARGS_ACTION_CHOICES = ['save_all', 'save_most_recent', 'back_up_to_s3']
 
-def main():
+
+def main(action):
     groupme_api = GroupMeAPI(config.GROUPME_URL, config.GROUP_ID, config.GROUP_NAME, config.GROUPME_ACCESS_TOKEN)
     firebase_db = Firebase(config.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY, config.FIREBASE_DATABASE_URL)
-
     assert(groupme_api.verfify_group_exists())
 
-    # save_all_multi_media_messages(groupme_api, firebase_db)
-    # save_since_last_message(groupme_api, firebase_db)
-    # backup_media_to_s3(firebase_db)
+    if action == 'save_all':
+        save_all_multi_media_messages(groupme_api, firebase_db)
+
+    elif action == 'save_most_recent':
+        save_since_last_message(groupme_api, firebase_db)
+
+    elif action == 'back_up_to_s3':
+        backup_media_to_s3(firebase_db)
+
+    else:
+        raise Exception('unrecoginzed option {}, must be one of {}'.form(action, ARGS_ACTION_CHOICES))
 
 
 def save_all_multi_media_messages(groupme_api, firebase_db):
@@ -125,7 +135,11 @@ def backup_media_to_s3(firebase_db):
 
 
 if __name__ == '__main__':
-    # TODO: args to save all
-    # TODO: args to get most recent messages
-    # TODO: args to backup any None values
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', type=str, choices=ARGS_ACTION_CHOICES)
+
+    args = parser.parse_args()
+
+    # TODO: upgrade to python 3.6
+    # TODO: create README
+    main(args.action)
