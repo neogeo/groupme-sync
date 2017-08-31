@@ -20,7 +20,7 @@ stdoutput = logging.StreamHandler(sys.stdout)
 stdoutput.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 logger.addHandler(stdoutput)
 
-ARGS_ACTION_CHOICES = ['save_all', 'save_most_recent', 'back_up_to_s3']
+ARGS_ACTION_CHOICES = ['save_all', 'save_most_recent', 'backup_to_s3']
 
 
 def main(action):
@@ -34,7 +34,7 @@ def main(action):
     elif action == 'save_most_recent':
         save_since_last_message(groupme_api, firebase_db)
 
-    elif action == 'back_up_to_s3':
+    elif action == 'backup_to_s3':
         backup_media_to_s3(firebase_db)
 
     else:
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # TODO: upgrade to python 3.6
-    # TODO: create README
+    # TODO: push to aws scheduled function
     main(args.action)
