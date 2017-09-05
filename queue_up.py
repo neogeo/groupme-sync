@@ -108,12 +108,12 @@ def backup_media_to_s3(firebase_db):
         media_type = event['type']
 
         try:
-            filename = file_utils.download_file_from_url(src_url, media_type, event_id)
+            filename, filepath = file_utils.download_file_from_url(src_url, media_type, event_id)
 
-            s3_utils.upload(filename)
+            s3_utils.upload(filepath, key=filename)
 
             # delete local file
-            file_utils.delete_file(filename)
+            file_utils.delete_file(filepath)
 
             # update firebase with 'backup_link'
             event['backup_link'] = filename
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # TODO: upgrade to python 3.6
-    # TODO: push to aws scheduled function
+    # TODO: schedule lamba function
     main(args.action)

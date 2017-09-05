@@ -13,13 +13,16 @@ def download_file_from_url(src_url, media_type, event_id):
         returns filename
         '''
         filename = create_filename(media_type, event_id)
-        delete_file(filename)
+        # write to tmp, because that's the only write-access an aws lambda gets
+        filepath = '/tmp/{}'.format(filename)
 
-        saved_filename = download(src_url, filename)
-        return saved_filename
+        delete_file(filepath)
+
+        saved_filepath = download(src_url, filepath)
+        return filename, saved_filepath
 
 
-def download(src_url, filename):
+def download(src_url, filepath):
     # urlib is 10x faster than using requests to download large files
     res = urlopen(src_url)
 
@@ -27,7 +30,7 @@ def download(src_url, filename):
     total_size = int(total_size)
     bytes_so_far = 0
 
-    with open(filename, 'wb') as wb:
+    with open(filepath, 'wb') as wb:
         while True:
             chunk = res.read(CHUNK)
             if not chunk:
@@ -37,7 +40,7 @@ def download(src_url, filename):
             bytes_so_far = bytes_so_far + CHUNK
             progress_bar(bytes_so_far, CHUNK, total_size)
 
-    return filename
+    return filepath
 
 
 def progress_bar(bytes_so_far, chunk_size, total_size):

@@ -34,8 +34,8 @@ Example usage:
 6. Run for the first time:
 ```
 >> virtualenv .env
->> pip install -r requirements.txt
 >> . .env/bin/activate
+>> pip install -r requirements.txt
 >> python save_all
 ```
 
@@ -46,4 +46,10 @@ get all events -> save in firebase --> upload to S3 ->
                         ^                            |
                         <- get most recent events <-<-
 ```
+
+### Deploy to AWS Lambda
+1. Create a new Role for lambda full access, and past the role arn in `lambda.json`
+2. run `./deploy.sh`
+
+
 

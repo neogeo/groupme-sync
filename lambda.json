@@ -1,0 +1,19 @@
+{
+  "name": "groupMeSyncFunction",
+  "description": "Keep GroupMe and S3 in sync",
+  "region": "us-west-2",
+  "runtime": "python2.7",
+  "handler": "lambda_func.handler",
+  "role": "arn:aws:iam::210751417156:role/lambda_full_access",
+  "requirements": ["pygithub"],
+  "ignore": [
+    "circle\\.yml$",
+    "\\.git$",
+    "/.*\\.pyc$"
+  ],
+  "timeout": 300,
+  "memory": 512,
+  "tracing": {
+    "Mode": "Active"
+  }
+}

@@ -3,3 +3,4 @@ arrow==0.10.0
 boto3==1.4.6
 firebase-admin==2.1.1
 requests==2.18.3
+lambda-uploader==1.2.0

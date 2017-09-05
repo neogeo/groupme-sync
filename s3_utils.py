@@ -15,13 +15,14 @@ stdoutput.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s
 logger.addHandler(stdoutput)
 
 
-def upload(filename):
+def upload(filepath, key):
     s3 = boto3.resource('s3')
 
-    logger.info('uploading {} to S3'.format(filename))
+    logger.info('uploading {} to S3, located at {}'.format(key, filepath))
     total_time = arrow.now()
-    with open(filename, 'rb') as rb:
-        s3.Bucket(config.S3_BUCKET).put_object(Key=filename, Body=rb, Tagging='groupme=true')
+
+    with open(filepath, 'rb') as rb:
+        s3.Bucket(config.S3_BUCKET).put_object(Key=key, Body=rb, Tagging='groupme=true')
 
     total_time = arrow.now() - total_time
-    logger.info('finished uploading {} to S3. took {} seconds'.format(filename, total_time))
+    logger.info('finished uploading {} to S3. took {} seconds'.format(key, total_time))
