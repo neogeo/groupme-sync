@@ -21,11 +21,17 @@ class Firebase():
 
     def _firebase_login(self, creds_path, database_url):
         cred = credentials.Certificate(creds_path)
-        #  Initialize the app with a service account, granting admin privileges
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': database_url,
-        })
-        root = db.reference()
+        #  Initialize a single app with a service account, granting admin privileges
+        try:
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': database_url,
+            })
+            root = db.reference()
+        except ValueError as e:
+            if 'app already exists' in e.message:
+                root = db.reference()
+            else:
+                raise e
 
         return root
 
