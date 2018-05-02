@@ -141,5 +141,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # TODO: upgrade to python 3.6
-    # TODO: schedule lamba function
     main(args.action)
