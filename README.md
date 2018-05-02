@@ -51,5 +51,7 @@ get all events -> save in firebase --> upload to S3 ->
 1. Create a new Role for lambda full access, and past the role arn in `lambda.json`
 2. run `./deploy.sh`
 
+optional: schedule the function with http://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
+
 
 
