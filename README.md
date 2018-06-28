@@ -53,5 +53,6 @@ get all events -> save in firebase --> upload to S3 ->
 
 optional: schedule the function with http://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html
 
-
+### Manually Download all Images and Video from S3
+`aws s3 sync s3://groupmesync . --dryrun`
 
